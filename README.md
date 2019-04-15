@@ -893,6 +893,68 @@ virtual int A() = 0;
 * 虚函数指针：在含有虚函数类的对象中，指向虚函数表，在运行时确定。
 * 虚函数表：在程序只读数据段（`.rodata section`，见：[目标文件存储结构](#%E7%9B%AE%E6%A0%87%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84)），存放虚函数指针，如果派生类实现了基类的某个虚函数，则在虚表中覆盖原本基类的那个虚函数指针，在编译时根据类的声明创建。
 
+案例代码：
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class A {
+public:
+	A() : m_data1(0), m_data2(0) {}
+	virtual void vfunc1() { cout << "A::vfunc1" << endl; };
+    virtual void vfunc2() { cout << "A::vfunc2" << endl; };
+    void func1() { cout << "A::func1" << endl; };
+    void func2() { cout << "A::func2" << endl; };
+private:
+    int m_data1, m_data2;
+};
+
+class B : public A {
+public:
+	B() : A(), m_data3(0) {}
+    virtual void vfunc1() { cout << "B::vfunc1" << endl; };
+    void func1() { cout << "B::func1" << endl; };
+private:
+    int m_data3;
+};
+
+class C: public B {
+public:
+	C() : B(), m_data1(0), m_data4(0) {}
+    virtual void vfunc2() { cout << "C::vfunc2" << endl; };
+    void func2() { cout << "C::func2" << endl; };
+private:
+    int m_data1, m_data4;
+};
+
+
+int main()
+{
+	B bObject;
+    A *p = &bObject;
+    p->vfunc1();
+
+	A aObject = (A)bObject;
+	aObject.vfunc1();
+
+	C cObject;
+	p = &cObject;
+	p->vfunc1();
+	p->vfunc2();
+
+	cObject.A::func1();
+
+	system("pause");
+}
+```
+
+<details><summary>对象模型图</summary>
+
+![C++ 对象模型图](images/CPP对象模型.png)
+
+</details>
+
 ### 虚继承
 
 虚继承用于解决多继承条件下的菱形继承问题（浪费存储空间、存在二义性）。
